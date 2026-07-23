@@ -1,0 +1,396 @@
+<!-- 파일 위치: pages/game_dino.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="공룡 달리기 게임 - 슬기로운 학교 생활" />
+    <title>공룡 달리기</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .game-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .game-panel {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .game-stage {
+        padding: 1rem;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      canvas {
+        width: 100%;
+        max-width: 700px;
+        display: block;
+        margin: 0 auto;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #dff1ff, #f5fbff);
+      }
+
+      .game-side {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .score-card {
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .score-card strong {
+        display: block;
+        font-size: 1.5rem;
+        margin-top: 0.25rem;
+      }
+
+      .controls-row {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .controls-row button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.75rem 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: white;
+      }
+
+      .game-help {
+        line-height: 1.75;
+        color: var(--text-subtle);
+        background: rgba(255, 255, 255, 0.55);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+      }
+
+      @media (max-width: 900px) {
+        .game-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">🦖</div>
+        <div>
+          <p class="eyebrow">머리 식히기</p>
+          <h1>공룡 달리기</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link active" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell game-shell">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">🦖</span>
+          <h2>장애물을 피하고 오래 달려보세요</h2>
+        </div>
+
+        <div class="game-panel">
+          <div class="game-stage">
+            <canvas id="gameCanvas" width="700" height="360" aria-label="공룡 달리기 캔버스"></canvas>
+          </div>
+
+          <div class="game-side">
+            <div class="score-card">
+              <span>현재 점수</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="score-card">
+              <span>최고 점수</span>
+              <strong id="bestScore">0</strong>
+            </div>
+            <div class="controls-row">
+              <button id="restartBtn" type="button">다시 시작</button>
+              <button id="jumpBtn" type="button">점프</button>
+            </div>
+            <div class="game-help">
+              <strong>조작 방법</strong><br />
+              1. 스페이스바 또는 점프 버튼으로 점프해요.<br />
+              2. 장애물을 피하면 점수가 올라가요.<br />
+              3. 어느 정도 버티면 더 높은 점수를 기록할 수 있어요.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const bestScoreEl = document.getElementById('bestScore');
+      const restartBtn = document.getElementById('restartBtn');
+      const jumpBtn = document.getElementById('jumpBtn');
+
+      const GRAVITY = 0.9;
+      const JUMP_POWER = -14;
+      const SPEED_BASE = 6;
+      const BASE_GROUND = 295;
+
+      let score = 0;
+      let bestScore = Math.floor(Number(localStorage.getItem('dino-best-score') || 0));
+      localStorage.setItem('dino-best-score', String(bestScore)); // 예전 버전에서 저장된 소수 최고점수를 정수로 정리
+      let gameOver = false;
+      let lastSpawn = 0;
+      let speed = SPEED_BASE;
+      let groundOffset = 0;
+
+      const dino = {
+        x: 80,
+        y: BASE_GROUND,
+        width: 46,
+        height: 48,
+        vy: 0,
+        jumped: false,
+      };
+
+      const obstacles = [];
+
+      /* 효과음: assets/sounds 폴더의 무료 효과음을 사용해요.
+         점프할 때마다 이 소리를 복제해서 재생하기 때문에,
+         짧은 시간에 여러 번 점프해도 소리가 겹쳐서 자연스럽게 들려요. */
+      const jumpSound = new Audio('../assets/sounds/jump.wav');
+      jumpSound.volume = 0.5;
+
+      function playJumpSound() {
+        const sfx = jumpSound.cloneNode();
+        sfx.volume = jumpSound.volume;
+        sfx.play().catch(() => {
+          // 브라우저가 자동 재생을 막은 경우 조용히 무시해요.
+        });
+      }
+
+      /* 이미지: assets/images 폴더의 무료 아이콘 이미지를 사용해요.
+         (게임 파일은 pages/ 폴더 안에 있으므로 ../assets/images/ 로 한 단계 위에서 찾아요) */
+      const dinoImg = new Image();
+      const rockImg = new Image();
+      let imagesLoaded = 0;
+
+      function onImageLoad() {
+        imagesLoaded += 1;
+        if (imagesLoaded === 2) {
+          resetGame();
+          requestAnimationFrame(loop);
+        }
+      }
+
+      dinoImg.onload = onImageLoad;
+      rockImg.onload = onImageLoad;
+      dinoImg.src = '../assets/images/dino.png';
+      rockImg.src = '../assets/images/rock.png';
+
+      ctx.fillStyle = '#7d8aa8';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('이미지를 불러오는 중...', canvas.width / 2, canvas.height / 2);
+
+      bestScoreEl.textContent = bestScore;
+
+      function resetGame() {
+        score = 0;
+        gameOver = false;
+        lastSpawn = 0;
+        speed = SPEED_BASE;
+        groundOffset = 0;
+        dino.y = BASE_GROUND;
+        dino.vy = 0;
+        dino.jumped = false;
+        obstacles.length = 0;
+        updateScore();
+      }
+
+      function updateScore() {
+        const displayScore = Math.floor(score);
+        scoreEl.textContent = displayScore;
+        if (displayScore > bestScore) {
+          bestScore = displayScore;
+          localStorage.setItem('dino-best-score', String(bestScore));
+          bestScoreEl.textContent = bestScore;
+        }
+      }
+
+      function jump() {
+        if (gameOver) return;
+        if (dino.y >= BASE_GROUND - 1) {
+          dino.vy = JUMP_POWER;
+          dino.jumped = true;
+          playJumpSound();
+        }
+      }
+
+      function spawnObstacle() {
+        const sizes = [26, 34, 42];
+        obstacles.push({
+          x: canvas.width + 10,
+          width: sizes[Math.floor(Math.random() * sizes.length)],
+          height: 24 + Math.random() * 20,
+          y: BASE_GROUND - 24,
+        });
+      }
+
+      function update(delta) {
+        if (gameOver) return;
+
+        groundOffset += speed;
+        if (groundOffset > 40) groundOffset = 0;
+
+        dino.vy += GRAVITY;
+        dino.y += dino.vy;
+        if (dino.y >= BASE_GROUND) {
+          dino.y = BASE_GROUND;
+          dino.vy = 0;
+          dino.jumped = false;
+        }
+
+        score += delta * 0.03;
+        speed += delta * 0.00015;
+        updateScore();
+
+        lastSpawn += delta;
+        if (lastSpawn > Math.max(850, 1300 - speed * 15)) {
+          spawnObstacle();
+          lastSpawn = 0;
+        }
+
+        for (let i = obstacles.length - 1; i >= 0; i -= 1) {
+          const obstacle = obstacles[i];
+          obstacle.x -= speed;
+
+          if (obstacle.x + obstacle.width < 0) {
+            obstacles.splice(i, 1);
+            continue;
+          }
+
+          const overlapsX = dino.x < obstacle.x + obstacle.width && dino.x + dino.width > obstacle.x;
+          const overlapsY = dino.y < obstacle.y + obstacle.height && dino.y + dino.height > obstacle.y;
+
+          if (overlapsX && overlapsY) {
+            gameOver = true;
+          }
+        }
+      }
+
+      function drawGround() {
+        ctx.fillStyle = '#bfd8ee';
+        ctx.fillRect(0, BASE_GROUND + 48, canvas.width, canvas.height - BASE_GROUND - 48);
+
+        ctx.strokeStyle = 'rgba(78, 120, 160, 0.35)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, BASE_GROUND + 50);
+        ctx.lineTo(canvas.width, BASE_GROUND + 50);
+        ctx.stroke();
+
+        ctx.fillStyle = '#8eb1d2';
+        for (let i = -1; i < canvas.width / 20 + 3; i += 1) {
+          const px = i * 20 - (groundOffset % 20);
+          ctx.fillRect(px, BASE_GROUND + 58, 10, 6);
+        }
+      }
+
+      function drawDino() {
+        if (dinoImg.complete && dinoImg.naturalWidth > 0) {
+          ctx.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
+        }
+      }
+
+      function drawObstacles() {
+        if (!(rockImg.complete && rockImg.naturalWidth > 0)) return;
+        obstacles.forEach((obstacle) => {
+          ctx.drawImage(rockImg, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        });
+      }
+
+      function drawGameOver() {
+        ctx.fillStyle = 'rgba(18, 27, 47, 0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('게임 오버', canvas.width / 2, canvas.height / 2 - 10);
+        ctx.font = '16px sans-serif';
+        ctx.fillText('다시 시작 버튼을 눌러 재도전하세요.', canvas.width / 2, canvas.height / 2 + 24);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f5fbff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawGround();
+        drawObstacles();
+        drawDino();
+
+        if (gameOver) {
+          drawGameOver();
+        }
+      }
+
+      let previous = 0;
+      function loop(timestamp) {
+        const delta = timestamp - previous;
+        previous = timestamp;
+        if (delta > 0) {
+          update(delta);
+          draw();
+        }
+        requestAnimationFrame(loop);
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === ' ' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          jump();
+        }
+      });
+
+      restartBtn.addEventListener('click', () => {
+        resetGame();
+        draw();
+      });
+
+      jumpBtn.addEventListener('click', () => {
+        jump();
+      });
+
+      /* 게임 시작은 위에서 공룡・바위 이미지를 모두 불러온 뒤
+         resetGame()과 requestAnimationFrame(loop)이 자동으로 실행돼요. */
+    </script>
+  </body>
+</html>

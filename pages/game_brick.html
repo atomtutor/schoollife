@@ -1,0 +1,424 @@
+<!-- 파일 위치: pages/game_brick.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="벽돌 깨기 게임 - 슬기로운 학교 생활" />
+    <title>벽돌 깨기</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .game-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .game-panel {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .game-stage {
+        padding: 1rem;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      canvas {
+        width: 100%;
+        max-width: 700px;
+        display: block;
+        margin: 0 auto;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #eef7ff, #f9fcff);
+      }
+
+      .game-side {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .score-card {
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .score-card strong {
+        display: block;
+        font-size: 1.5rem;
+        margin-top: 0.25rem;
+      }
+
+      .controls-row {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .controls-row button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.75rem 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: white;
+      }
+
+      .game-help {
+        line-height: 1.75;
+        color: var(--text-subtle);
+        background: rgba(255, 255, 255, 0.55);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+      }
+
+      @media (max-width: 900px) {
+        .game-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">🧱</div>
+        <div>
+          <p class="eyebrow">머리 식히기</p>
+          <h1>벽돌 깨기</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link active" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell game-shell">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">🧱</span>
+          <h2>패들을 움직여 벽돌을 모두 깨보세요</h2>
+        </div>
+
+        <div class="game-panel">
+          <div class="game-stage">
+            <canvas id="gameCanvas" width="700" height="420" aria-label="벽돌 깨기 캔버스"></canvas>
+          </div>
+
+          <div class="game-side">
+            <div class="score-card">
+              <span>점수</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="score-card">
+              <span>최고 점수</span>
+              <strong id="bestScore">0</strong>
+            </div>
+            <div class="controls-row">
+              <button id="restartBtn" type="button">다시 시작</button>
+            </div>
+            <div class="game-help">
+              <strong>조작 방법</strong><br />
+              1. 마우스를 좌우로 움직여 패들을 조종해요.<br />
+              2. 공을 튕겨 벽돌을 깨면 점수가 올라가요.<br />
+              3. 벽돌을 모두 깨면 성공합니다.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const bestScoreEl = document.getElementById('bestScore');
+      const restartBtn = document.getElementById('restartBtn');
+
+      const paddle = {
+        width: 100,
+        height: 14,
+        x: canvas.width / 2 - 50,
+        y: canvas.height - 32,
+        speed: 10,
+      };
+
+      const ball = {
+        x: canvas.width / 2,
+        y: canvas.height - 60,
+        radius: 9,
+        vx: 4,
+        vy: -4,
+      };
+
+      /* 효과음: assets/sounds 폴더의 무료 효과음을 사용해요.
+         공이 벽돌에 부딪힐 때마다 이 소리를 복제해서 재생하기 때문에,
+         짧은 시간에 여러 번 부딪혀도 소리가 겹쳐서 자연스럽게 들려요. */
+      const hitSound = new Audio('../assets/sounds/ping.wav');
+      hitSound.volume = 0.5;
+
+      function playHitSound() {
+        const sfx = hitSound.cloneNode();
+        sfx.volume = hitSound.volume;
+        sfx.play().catch(() => {
+          // 브라우저가 자동 재생을 막은 경우 조용히 무시해요.
+        });
+      }
+
+      const bricks = [];
+      let score = 0;
+      let bestScore = Number(localStorage.getItem('brick-best-score') || 0);
+      let gameOver = false;
+      let gameClear = false;
+      let lastTime = 0;
+
+      bestScoreEl.textContent = bestScore;
+
+      /* 벽돌 줄마다 다른 색을 쓰기 위한 팔레트예요. 줄 번호(row)를 이 배열의
+         길이로 나눈 나머지로 색을 골라서, 줄마다 알록달록하게 보이게 해요. */
+      const BRICK_COLORS = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#9775fa'];
+
+      function createBricks() {
+        bricks.length = 0;
+        const rows = 4;
+        const cols = 8;
+        const brickWidth = 70;
+        const brickHeight = 24;
+        const gap = 8;
+        const offsetX = 40;
+        const offsetY = 40;
+
+        for (let row = 0; row < rows; row += 1) {
+          for (let col = 0; col < cols; col += 1) {
+            bricks.push({
+              x: offsetX + col * (brickWidth + gap),
+              y: offsetY + row * (brickHeight + gap),
+              width: brickWidth,
+              height: brickHeight,
+              alive: true,
+              color: BRICK_COLORS[row % BRICK_COLORS.length],
+            });
+          }
+        }
+      }
+
+      function resetGame() {
+        score = 0;
+        gameOver = false;
+        gameClear = false;
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height - 60;
+        ball.vx = 4;
+        ball.vy = -4;
+        paddle.x = canvas.width / 2 - paddle.width / 2;
+        createBricks();
+        updateScore();
+      }
+
+      function updateScore() {
+        scoreEl.textContent = score;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('brick-best-score', String(bestScore));
+          bestScoreEl.textContent = bestScore;
+        }
+      }
+
+      function update(delta) {
+        if (gameOver || gameClear) return;
+
+        const moveX = (canvas.width - paddle.width) / 2;
+        paddle.x = Math.min(Math.max(paddle.x + (delta * 0.05 * (mouseX - paddle.x)), 0), canvas.width - paddle.width);
+
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        if (ball.x <= ball.radius || ball.x >= canvas.width - ball.radius) {
+          ball.vx *= -1;
+        }
+
+        if (ball.y <= ball.radius) {
+          ball.vy *= -1;
+        }
+
+        if (ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height && ball.x >= paddle.x && ball.x <= paddle.x + paddle.width) {
+          ball.vy *= -1;
+          ball.vx += (ball.x - (paddle.x + paddle.width / 2)) * 0.02;
+        }
+
+        if (ball.y - ball.radius > canvas.height) {
+          gameOver = true;
+        }
+
+        for (const brick of bricks) {
+          if (!brick.alive) continue;
+          const touchingX = ball.x + ball.radius > brick.x && ball.x - ball.radius < brick.x + brick.width;
+          const touchingY = ball.y + ball.radius > brick.y && ball.y - ball.radius < brick.y + brick.height;
+
+          if (touchingX && touchingY) {
+            brick.alive = false;
+            ball.vy *= -1;
+            score += 10;
+            updateScore();
+            playHitSound();
+          }
+        }
+
+        if (bricks.every((brick) => !brick.alive)) {
+          gameClear = true;
+        }
+      }
+
+      function drawBricks() {
+        bricks.forEach((brick) => {
+          if (!brick.alive) return;
+
+          ctx.fillStyle = brick.color;
+          ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+
+          /* 위쪽은 밝게, 아래쪽은 어둡게 칠해서 벽돌에 약간의 입체감을 줘요. */
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+          ctx.fillRect(brick.x + 2, brick.y + 2, brick.width - 4, brick.height * 0.35);
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+          ctx.fillRect(brick.x + 2, brick.y + brick.height - 6, brick.width - 4, 4);
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(brick.x + 0.5, brick.y + 0.5, brick.width - 1, brick.height - 1);
+        });
+      }
+
+      /* 모서리가 둥근 사각형 경로를 그려주는 도우미 함수예요.
+         패들을 알약(캡슐) 모양으로 그릴 때 사용해요. */
+      function traceRoundedRect(x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + width, y, x + width, y + height, r);
+        ctx.arcTo(x + width, y + height, x, y + height, r);
+        ctx.arcTo(x, y + height, x, y, r);
+        ctx.arcTo(x, y, x + width, y, r);
+        ctx.closePath();
+      }
+
+      function drawPaddle() {
+        const radius = paddle.height / 2;
+
+        /* 그림자를 먼저 그려서 패들이 살짝 떠 있는 것처럼 보이게 해요. */
+        ctx.save();
+        ctx.shadowColor = 'rgba(20, 30, 60, 0.35)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 4;
+
+        const gradient = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.height);
+        gradient.addColorStop(0, '#ffd199');
+        gradient.addColorStop(0.55, '#f38b4a');
+        gradient.addColorStop(1, '#d76a25');
+
+        traceRoundedRect(paddle.x, paddle.y, paddle.width, paddle.height, radius);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.restore();
+
+        /* 위쪽에 반짝이는 하이라이트, 아래쪽에 그림자 띠를 더해서
+           동그란 캔디바처럼 입체적으로 보이게 해요. */
+        ctx.save();
+        traceRoundedRect(paddle.x, paddle.y, paddle.width, paddle.height, radius);
+        ctx.clip();
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.fillRect(paddle.x, paddle.y + 1, paddle.width, paddle.height * 0.4);
+
+        ctx.fillStyle = 'rgba(120, 50, 10, 0.28)';
+        ctx.fillRect(paddle.x, paddle.y + paddle.height * 0.72, paddle.width, paddle.height * 0.28);
+        ctx.restore();
+      }
+
+      function drawBall() {
+        ctx.beginPath();
+        ctx.fillStyle = '#ff6b6b';
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawOverlay() {
+        ctx.fillStyle = 'rgba(18, 27, 47, 0.62)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 28px sans-serif';
+
+        if (gameOver) {
+          ctx.fillText('게임 오버', canvas.width / 2, canvas.height / 2 - 8);
+        }
+
+        if (gameClear) {
+          ctx.fillText('게임 클리어!', canvas.width / 2, canvas.height / 2 - 8);
+        }
+
+        ctx.font = '16px sans-serif';
+        ctx.fillText('다시 시작 버튼을 눌러 다시 도전하세요.', canvas.width / 2, canvas.height / 2 + 24);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f7fbff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawBricks();
+        drawPaddle();
+        drawBall();
+
+        if (gameOver || gameClear) {
+          drawOverlay();
+        }
+      }
+
+      let mouseX = canvas.width / 2;
+      canvas.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        mouseX = (event.clientX - rect.left) * scaleX;
+      });
+
+      restartBtn.addEventListener('click', () => {
+        resetGame();
+        draw();
+      });
+
+      function loop(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+        const delta = timestamp - lastTime;
+        lastTime = timestamp;
+
+        update(delta);
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      resetGame();
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

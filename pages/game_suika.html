@@ -1,0 +1,420 @@
+<!-- 파일 위치: pages/game_suika.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="수박 게임 - 슬기로운 학교 생활" />
+    <title>수박 게임</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .game-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .game-panel {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .game-stage {
+        padding: 1rem;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      canvas {
+        width: 100%;
+        max-width: 420px;
+        display: block;
+        margin: 0 auto;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #cbeaff, #f8fbff);
+      }
+
+      .game-side {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .score-card {
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .score-card strong {
+        display: block;
+        font-size: 1.5rem;
+        margin-top: 0.25rem;
+      }
+
+      .controls-row {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .controls-row button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.75rem 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: white;
+      }
+
+      .game-help {
+        line-height: 1.75;
+        color: var(--text-subtle);
+        background: rgba(255, 255, 255, 0.55);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+      }
+
+      @media (max-width: 900px) {
+        .game-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">🍉</div>
+        <div>
+          <p class="eyebrow">머리 식히기</p>
+          <h1>수박 게임</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link active" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell game-shell">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">🍉</span>
+          <h2>같은 과일을 합쳐서 큰 수박을 만들어요</h2>
+        </div>
+
+        <div class="game-panel">
+          <div class="game-stage">
+            <canvas id="gameCanvas" width="420" height="560" aria-label="수박 게임 캔버스"></canvas>
+          </div>
+
+          <div class="game-side">
+            <div class="score-card">
+              <span>점수</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="score-card">
+              <span>최고 점수</span>
+              <strong id="bestScore">0</strong>
+            </div>
+            <div class="controls-row">
+              <button id="restartBtn" type="button">다시 시작</button>
+              <button id="dropBtn" type="button">바로 떨어뜨리기</button>
+            </div>
+            <div class="game-help">
+              <strong>조작 방법</strong><br />
+              1. ← → 방향키로 과일을 좌우로 이동해요.<br />
+              2. 스페이스바 또는 아래 버튼으로 바로 떨어뜨려요.<br />
+              3. 같은 과일끼리 겹치면 합쳐져서 더 큰 과일이 돼요.<br />
+              4. 점수가 높아질수록 더 큰 수박을 만들 수 있어요.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const bestScoreEl = document.getElementById('bestScore');
+      const restartBtn = document.getElementById('restartBtn');
+      const dropBtn = document.getElementById('dropBtn');
+
+      const COLS = 5;
+      const ROWS = 7;
+      const CELL = 70;
+      const OFFSET_X = 25;
+      const OFFSET_Y = 20;
+      const FALL_MS = 420;
+
+      /* 과일 이미지: assets/images 폴더의 무료 아이콘 이미지를 사용해요.
+         (게임 파일은 pages/ 폴더 안에 있으므로 ../assets/images/ 로 한 단계 위에서 찾아요) */
+      const FRUITS = [
+        { name: '체리', src: '../assets/images/cherr.png', radius: 20 },
+        { name: '포도', src: '../assets/images/grape.png', radius: 26 },
+        { name: '오렌지', src: '../assets/images/orang.png', radius: 32 },
+        { name: '사과', src: '../assets/images/apple.png', radius: 38 },
+        { name: '배', src: '../assets/images/pear.png', radius: 44 },
+        { name: '복숭아', src: '../assets/images/pich.png', radius: 50 },
+        { name: '수박', src: '../assets/images/waterm.png', radius: 56 },
+      ];
+
+      let imagesLoaded = 0;
+      FRUITS.forEach((fruit) => {
+        const img = new Image();
+        img.onload = () => {
+          imagesLoaded += 1;
+          if (imagesLoaded === FRUITS.length) {
+            resetGame();
+            requestAnimationFrame(gameLoop);
+          }
+        };
+        img.src = fruit.src;
+        fruit.img = img;
+      });
+
+      ctx.fillStyle = '#7d8aa8';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('과일 이미지를 불러오는 중...', canvas.width / 2, canvas.height / 2);
+
+      /* 효과음: assets/sounds 폴더의 무료 효과음을 사용해요.
+         과일이 합쳐질 때마다 이 소리를 복제해서 재생하기 때문에,
+         짧은 시간에 여러 번 합쳐져도 소리가 겹쳐서 자연스럽게 들려요. */
+      const matchSound = new Audio('../assets/sounds/match.wav');
+      matchSound.volume = 0.5;
+
+      function playMatchSound() {
+        const sfx = matchSound.cloneNode();
+        sfx.volume = matchSound.volume;
+        sfx.play().catch(() => {
+          // 브라우저가 자동 재생을 막은 경우 조용히 무시해요.
+        });
+      }
+
+      let board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      let current = null;
+      let score = 0;
+      let bestScore = Number(localStorage.getItem('suika-best-score') || 0);
+      let gameOver = false;
+      let lastTime = 0;
+
+      bestScoreEl.textContent = bestScore;
+
+      function createFruit(type = Math.floor(Math.random() * 4)) {
+        return { x: 2, y: 0, type };
+      }
+
+      function updateScore() {
+        scoreEl.textContent = score;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('suika-best-score', String(bestScore));
+          bestScoreEl.textContent = bestScore;
+        }
+      }
+
+      function spawnFruit() {
+        current = createFruit();
+        if (board[0][current.x] !== null) {
+          gameOver = true;
+        }
+      }
+
+      function resetGame() {
+        board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+        score = 0;
+        gameOver = false;
+        lastTime = 0;
+        updateScore();
+        spawnFruit();
+      }
+
+      function canPlace(x, y) {
+        return y >= 0 && y < ROWS && x >= 0 && x < COLS && board[y][x] === null;
+      }
+
+      function placeCurrent() {
+        if (!current) return;
+        const { x, y, type } = current;
+        if (!canPlace(x, y)) {
+          gameOver = true;
+          return;
+        }
+
+        board[y][x] = type;
+        mergeSameFruits();
+        spawnFruit();
+      }
+
+      function mergeSameFruits() {
+        let changed = true;
+        while (changed) {
+          changed = false;
+
+          for (let y = 0; y < ROWS; y += 1) {
+            for (let x = 0; x < COLS; x += 1) {
+              const type = board[y][x];
+              if (type === null || type >= FRUITS.length - 1) continue;
+
+              const neighbors = [
+                [x + 1, y],
+                [x - 1, y],
+                [x, y + 1],
+                [x, y - 1],
+              ];
+
+              for (const [nx, ny] of neighbors) {
+                if (ny < 0 || ny >= ROWS || nx < 0 || nx >= COLS) continue;
+                if (board[ny][nx] === type) {
+                  board[y][x] = null;
+                  board[ny][nx] = Math.min(type + 1, FRUITS.length - 1);
+                  score += 1;
+                  updateScore();
+                  playMatchSound();
+                  changed = true;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      function moveCurrent(dx) {
+        if (!current || gameOver) return;
+        const nextX = current.x + dx;
+        if (canPlace(nextX, current.y)) {
+          current.x = nextX;
+        }
+      }
+
+      function dropCurrent() {
+        if (!current || gameOver) return;
+        while (canPlace(current.x, current.y + 1)) {
+          current.y += 1;
+        }
+        placeCurrent();
+      }
+
+      function drawBackground() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < ROWS; y += 1) {
+          for (let x = 0; x < COLS; x += 1) {
+            ctx.strokeStyle = 'rgba(90, 120, 175, 0.14)';
+            ctx.strokeRect(OFFSET_X + x * CELL, OFFSET_Y + y * CELL, CELL, CELL);
+          }
+        }
+      }
+
+      function drawFruit(x, y, type, isCurrent = false) {
+        const fruit = FRUITS[type];
+        const centerX = OFFSET_X + x * CELL + CELL / 2;
+        const centerY = OFFSET_Y + y * CELL + CELL / 2;
+        const size = fruit.radius * 2;
+
+        if (fruit.img && fruit.img.complete && fruit.img.naturalWidth > 0) {
+          ctx.drawImage(fruit.img, centerX - fruit.radius, centerY - fruit.radius, size, size);
+        }
+
+        if (isCurrent) {
+          ctx.strokeStyle = '#6554ff';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(OFFSET_X + x * CELL + 4, OFFSET_Y + y * CELL + 4, CELL - 8, CELL - 8);
+        }
+      }
+
+      function draw() {
+        drawBackground();
+
+        for (let y = 0; y < ROWS; y += 1) {
+          for (let x = 0; x < COLS; x += 1) {
+            if (board[y][x] !== null) {
+              drawFruit(x, y, board[y][x], false);
+            }
+          }
+        }
+
+        if (current && !gameOver) {
+          drawFruit(current.x, current.y, current.type, true);
+        }
+
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(20, 25, 47, 0.62)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 24px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('게임 오버', canvas.width / 2, canvas.height / 2);
+          ctx.font = '16px sans-serif';
+          ctx.fillText('다시 시작 버튼을 눌러 재도전하세요.', canvas.width / 2, canvas.height / 2 + 30);
+        }
+      }
+
+      function gameLoop(timestamp) {
+        if (!lastTime) {
+          lastTime = timestamp;
+        }
+
+        const delta = timestamp - lastTime;
+        if (!gameOver && delta >= FALL_MS) {
+          lastTime = timestamp;
+          if (canPlace(current.x, current.y + 1)) {
+            current.y += 1;
+          } else {
+            placeCurrent();
+          }
+        }
+
+        draw();
+        requestAnimationFrame(gameLoop);
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+          moveCurrent(-1);
+        } else if (event.key === 'ArrowRight') {
+          moveCurrent(1);
+        } else if (event.key === 'ArrowDown' || event.key === ' ') {
+          event.preventDefault();
+          dropCurrent();
+        }
+        draw();
+      });
+
+      restartBtn.addEventListener('click', () => {
+        resetGame();
+        draw();
+      });
+
+      dropBtn.addEventListener('click', () => {
+        dropCurrent();
+        draw();
+      });
+
+      /* 게임 시작은 위에서 과일 이미지 7장을 모두 불러온 뒤
+         resetGame()과 requestAnimationFrame(gameLoop)이 자동으로 실행돼요. */
+    </script>
+  </body>
+</html>

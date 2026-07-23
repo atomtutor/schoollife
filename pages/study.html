@@ -1,0 +1,81 @@
+<!-- 파일 위치: pages/study.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="공부하자 메뉴. 학습 허브 페이지입니다."
+    />
+    <title>공부하자</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">📚</div>
+        <div>
+          <p class="eyebrow">학습 허브</p>
+          <h1>공부하자</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link active" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell menu-page">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">📚</span>
+          <h2>오늘의 학습 선택</h2>
+        </div>
+        <div class="menu-grid">
+          <a class="glass menu-card" href="pomodoro.html" role="button" tabindex="0" aria-label="뽀모도로 타이머 열기">
+            <div class="icon">⏱️</div>
+            <h3>뽀모도로 타이머</h3>
+            <p>집중 시간을 정해서 공부 습관을 만들어 보세요.</p>
+          </a>
+
+          <a class="glass menu-card" href="whitenoise.html" role="button" tabindex="0" aria-label="백색소음 플레이어 열기">
+            <div class="icon">🎧</div>
+            <h3>백색소음 플레이어</h3>
+            <p>조용한 환경에서 집중할 수 있도록 도와줍니다.</p>
+          </a>
+
+          <a class="glass menu-card" href="flashcard.html" role="button" tabindex="0" aria-label="영단어 플래시카드 열기">
+            <div class="icon">📇</div>
+            <h3>영단어 플래시카드</h3>
+            <p>짧게 반복하면서 단어를 자연스럽게 익혀 보세요.</p>
+          </a>
+
+          <a class="glass menu-card" href="quiz.html" role="button" tabindex="0" aria-label="실전 단어 학습 열기">
+            <div class="icon">📝</div>
+            <h3>실전 단어 학습</h3>
+            <p>단어 풀기를 통해 실전 감각을 익히는 기능입니다.</p>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+  </body>
+</html>

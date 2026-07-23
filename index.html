@@ -1,0 +1,103 @@
+<!-- 파일 위치: index.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="슬기로운 학교 생활 대시보드. 급식, 게임, 공부 도구를 한 곳에서 쉽게 확인하세요."
+    />
+    <title>슬기로운 학교 생활</title>
+    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">🏫</div>
+        <div>
+          <p class="eyebrow">학교 생활 대시보드</p>
+          <h1>슬기로운 학교 생활</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link active" href="index.html" data-page="index">메인</a>
+        <a class="nav-link" href="pages/game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link" href="pages/study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero-grid">
+        <article class="glass card fortune-card">
+          <div class="section-title-row">
+            <span class="title-emoji">🔮</span>
+            <h2>오늘의 운세</h2>
+          </div>
+          <p class="fortune-subtitle">오늘 하루는 어떤 날일까요?</p>
+
+          <div id="fortune-idle" class="fortune-idle">
+            <button id="fortune-reveal-btn" type="button" class="fortune-reveal-btn">오늘의 운세 보기 🔮</button>
+          </div>
+
+          <div id="fortune-result" class="fortune-result" hidden>
+            <div class="fortune-emoji" id="fortune-emoji">🍀</div>
+            <p class="fortune-text" id="fortune-text"></p>
+
+            <div class="fortune-extra">
+              <div class="fortune-chip">
+                <span class="fortune-chip-label">행운의 색</span>
+                <span class="fortune-chip-value">
+                  <span class="fortune-color-dot" id="fortune-color-dot"></span>
+                  <span id="fortune-color-name"></span>
+                </span>
+              </div>
+              <div class="fortune-chip">
+                <span class="fortune-chip-label">행운의 아이템</span>
+                <span class="fortune-chip-value" id="fortune-item"></span>
+              </div>
+            </div>
+
+            <button id="fortune-reroll-btn" type="button" class="fortune-reroll-btn">그냥 재미로 다시 뽑기 🔁</button>
+          </div>
+        </article>
+
+        <article class="glass card countdown-card">
+          <div class="section-title-row">
+            <span class="title-emoji">⏰</span>
+            <h2 id="countdownLabel">하교까지 남은 시간</h2>
+          </div>
+
+          <div class="timer-setup">
+            <div class="timer-mode-group" role="group" aria-label="시간 종류 선택">
+              <button type="button" class="timer-mode-btn" data-mode="lunch" aria-pressed="false">점심</button>
+              <button type="button" class="timer-mode-btn" data-mode="dismissal" aria-pressed="false">하교</button>
+            </div>
+            <input type="time" id="targetTimeInput" aria-label="목표 시각 입력" />
+          </div>
+
+          <div id="countdown" class="countdown-number">00:00:00</div>
+          <p class="countdown-note">점심/하교 중 하나를 고르고 시각을 입력하면, 그 시각까지 남은 시간이 자동으로 표시돼요.</p>
+        </article>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>바이브코딩 홈페이지</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/fortune.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

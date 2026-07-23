@@ -1,0 +1,75 @@
+<!-- 파일 위치: pages/game.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="머리 식히기 메뉴. 게임 허브 페이지입니다."
+    />
+    <title>머리 식히기</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">🎮</div>
+        <div>
+          <p class="eyebrow">게임 허브</p>
+          <h1>머리 식히기</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link active" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell menu-page">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">🎮</span>
+          <h2>오늘의 게임 선택</h2>
+        </div>
+        <div class="menu-grid">
+          <a class="glass menu-card" href="game_suika.html" role="button" tabindex="0" aria-label="수박 게임 열기">
+            <div class="icon">🍉</div>
+            <h3>수박 게임</h3>
+            <p>합체와 전략을 즐기는 재미있는 퍼즐 게임입니다.</p>
+          </a>
+
+          <a class="glass menu-card" href="game_dino.html" role="button" tabindex="0" aria-label="공룡 달리기 열기">
+            <div class="icon">🦖</div>
+            <h3>공룡 달리기</h3>
+            <p>가장 먼저 만들어볼 수 있는 쉬운 Canvas 게임입니다.</p>
+          </a>
+
+          <a class="glass menu-card" href="game_brick.html" role="button" tabindex="0" aria-label="벽돌 깨기 열기">
+            <div class="icon">🧱</div>
+            <h3>벽돌 깨기</h3>
+            <p>기본적인 공 튕기기 로직을 익히기 좋은 게임입니다.</p>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+  </body>
+</html>

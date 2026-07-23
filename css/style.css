@@ -1,0 +1,463 @@
+/* 파일 위치: css/style.css */
+:root {
+  --bg-start: #d9f0ff;
+  --bg-end: #efe0ff;
+  --glass-bg: rgba(255, 255, 255, 0.34);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --surface: rgba(255, 255, 255, 0.52);
+  --surface-strong: rgba(255, 255, 255, 0.76);
+  --text-main: #243149;
+  --text-subtle: #5f6e86;
+  --accent: #5e8bff;
+  --accent-strong: #7b63ff;
+  --danger: #ff6f91;
+  --shadow: 0 18px 45px rgba(96, 108, 160, 0.16);
+  --radius: 22px;
+  --radius-sm: 14px;
+  --font-body: "Pretendard", "Noto Sans KR", sans-serif;
+  --font-size-xl: 2rem;
+  --font-size-lg: 1.3rem;
+  --font-size-md: 1rem;
+  --font-size-sm: 0.9rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--text-main);
+  background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+  position: relative;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+.background-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 280px;
+  height: 280px;
+  top: 4rem;
+  left: -4rem;
+  background: rgba(128, 220, 255, 0.45);
+}
+
+.orb-2 {
+  width: 320px;
+  height: 320px;
+  right: -5rem;
+  bottom: 4rem;
+  background: rgba(171, 133, 255, 0.43);
+}
+
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.topbar {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0.8rem;
+  z-index: 20;
+}
+
+.card,
+.menu-card,
+.flashcard-box,
+.quiz-options button,
+.site-footer,
+.fortune-reveal-btn,
+.fortune-reroll-btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.brand-mark {
+  font-size: 1.6rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+}
+
+.gnb {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--text-main);
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+}
+
+.page-shell {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 1.25rem auto 0;
+  padding-bottom: 4rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.card {
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  background: var(--surface);
+}
+
+.fortune-card,
+.countdown-card {
+  min-height: 280px;
+}
+
+.countdown-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.title-emoji {
+  font-size: 1.3rem;
+}
+
+.fortune-subtitle,
+.countdown-note {
+  color: var(--text-subtle);
+  font-size: 0.95rem;
+}
+
+.fortune-idle {
+  margin-top: 1.4rem;
+  display: flex;
+  justify-content: center;
+}
+
+.fortune-reveal-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.4rem;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  box-shadow: 0 12px 26px rgba(94, 139, 255, 0.32);
+}
+
+.fortune-reveal-btn:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes fortuneReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fortune-result {
+  text-align: center;
+  margin-top: 0.6rem;
+}
+
+.fortune-result.show {
+  animation: fortuneReveal 0.35s ease;
+}
+
+.fortune-emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.fortune-text {
+  margin-top: 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.fortune-extra {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.fortune-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: center;
+  background: var(--surface-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1rem;
+  min-width: 120px;
+}
+
+.fortune-chip-label {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  font-weight: 700;
+}
+
+.fortune-chip-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+}
+
+.fortune-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  display: inline-block;
+}
+
+.fortune-reroll-btn {
+  margin-top: 1.1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-subtle);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.fortune-reroll-btn:hover {
+  color: var(--accent-strong);
+}
+
+.timer-setup {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+}
+
+.timer-mode-group {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+}
+
+.timer-mode-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-weight: 700;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.timer-mode-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+}
+
+.timer-setup input[type="time"] {
+  border: 2px solid rgba(124, 108, 246, 0.24);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.84);
+  padding: 0.45rem 0.7rem;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  color: var(--text-main);
+}
+
+.timer-setup input[type="time"]:focus {
+  outline: none;
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 4px rgba(124, 108, 246, 0.12);
+}
+
+.countdown-number {
+  margin: 1.25rem 0 0.85rem;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.menu-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.menu-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 1.3rem;
+  border-radius: var(--radius);
+  min-height: 170px;
+  background: var(--surface);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-card:hover,
+.menu-card:focus-visible {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(64, 72, 130, 0.22);
+  outline: none;
+}
+
+.flashcard-controls button:hover,
+.quiz-options button:hover,
+.floating-tutor:hover {
+  transform: translateY(-2px);
+}
+
+.menu-card .icon {
+  font-size: 2rem;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.menu-card h3 {
+  margin: 0.8rem 0 0.4rem;
+  font-size: 1.15rem;
+}
+
+.menu-card p {
+  color: var(--text-subtle);
+  line-height: 1.6;
+}
+
+.floating-tutor {
+  position: fixed;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.1rem;
+  background: linear-gradient(135deg, #5e8bff, #865fff);
+  color: white;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.floating-tutor:focus-visible {
+  outline: 3px solid rgba(94, 139, 255, 0.35);
+  outline-offset: 2px;
+}
+
+.site-footer {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 1rem auto 1.5rem;
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+}
+
+.site-footer a {
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .topbar,
+  .site-footer {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-shell {
+    width: min(100%, calc(100% - 1rem));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+}

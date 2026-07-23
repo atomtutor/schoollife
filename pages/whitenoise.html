@@ -1,0 +1,279 @@
+<!-- 파일 위치: pages/whitenoise.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="백색소음 플레이어 - 슬기로운 학교 생활" />
+    <title>백색소음 플레이어</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .noise-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .noise-panel {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .noise-stage {
+        padding: 2rem;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.52);
+        text-align: center;
+      }
+
+      .noise-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin-bottom: 0.8rem;
+      }
+
+      .noise-status {
+        margin-top: 1rem;
+        color: var(--text-subtle);
+        font-weight: 700;
+      }
+
+      .noise-controls {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+
+      .noise-controls button,
+      .noise-mode button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.8rem 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: white;
+      }
+
+      .noise-side {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .noise-mode {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .noise-note {
+        line-height: 1.75;
+        color: var(--text-subtle);
+        background: rgba(255, 255, 255, 0.55);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+      }
+
+      @media (max-width: 900px) {
+        .noise-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">🎧</div>
+        <div>
+          <p class="eyebrow">학습 허브</p>
+          <h1>백색소음 플레이어</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link active" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell noise-shell">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">🎧</span>
+          <h2>조용한 학습 환경을 만드는 소리</h2>
+        </div>
+
+        <div class="noise-panel">
+          <div class="noise-stage">
+            <div class="noise-title" id="noiseTitle">백색소음</div>
+            <div class="noise-status" id="noiseStatus">재생 대기 중</div>
+            <div class="noise-controls">
+              <button id="playBtn" type="button">재생</button>
+              <button id="pauseBtn" type="button">정지</button>
+            </div>
+          </div>
+
+          <div class="noise-side">
+            <div class="noise-mode">
+              <button data-mode="white" type="button">백색소음</button>
+              <button data-mode="rain" type="button">비 소리</button>
+              <button data-mode="fan" type="button">선풍기</button>
+              <button data-mode="forest" type="button">숲 소리</button>
+            </div>
+            <div class="noise-note">
+              <strong>사용 방법</strong><br />
+              1. 원하는 소리 모드를 선택해요.<br />
+              2. 재생 버튼을 눌러 배경음을 켜세요.<br />
+              3. 집중이 어려울 때 잠깐 정지해도 좋아요.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+      const noiseTitle = document.getElementById('noiseTitle');
+      const noiseStatus = document.getElementById('noiseStatus');
+      const playBtn = document.getElementById('playBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const modeButtons = document.querySelectorAll('[data-mode]');
+
+      let audioContext = null;
+      let noiseNode = null;
+      let gainNode = null;
+      let lfoNode = null;
+      let isPlaying = false;
+      let currentMode = 'white';
+
+      function getAudioContext() {
+        if (!audioContext) {
+          audioContext = new window.AudioContext();
+        }
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+        return audioContext;
+      }
+
+      function buildNoise(mode) {
+        const ctx = getAudioContext();
+        if (noiseNode) noiseNode.disconnect();
+        if (lfoNode) lfoNode.disconnect();
+        if (gainNode) gainNode.disconnect();
+
+        const bufferSize = ctx.sampleRate * 2;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i += 1) {
+          let value = Math.random() * 2 - 1;
+          if (mode === 'rain') value *= 0.5;
+          if (mode === 'fan') value *= 0.7;
+          if (mode === 'forest') value *= 0.35;
+          data[i] = value;
+        }
+
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+
+        const gain = ctx.createGain();
+        gain.gain.value = 0.03;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = mode === 'forest' ? 800 : mode === 'rain' ? 1200 : 1800;
+        filter.Q.value = 0.8;
+
+        const shaper = ctx.createBiquadFilter();
+        shaper.type = 'highpass';
+        shaper.frequency.value = mode === 'white' ? 120 : 80;
+
+        source.connect(filter);
+        filter.connect(shaper);
+        shaper.connect(gain);
+        gain.connect(ctx.destination);
+
+        source.start();
+        noiseNode = source;
+        gainNode = gain;
+
+        if (mode === 'fan') {
+          const lfo = ctx.createOscillator();
+          const lfoGain = ctx.createGain();
+          lfo.frequency.value = 0.15;
+          lfoGain.gain.value = 0.08;
+          lfo.connect(lfoGain);
+          lfoGain.connect(filter.frequency);
+          lfo.start();
+          lfoNode = lfo;
+        }
+      }
+
+      function setMode(mode) {
+        currentMode = mode;
+        if (mode === 'white') noiseTitle.textContent = '백색소음';
+        if (mode === 'rain') noiseTitle.textContent = '비 소리';
+        if (mode === 'fan') noiseTitle.textContent = '선풍기';
+        if (mode === 'forest') noiseTitle.textContent = '숲 소리';
+
+        if (isPlaying) {
+          buildNoise(mode);
+        }
+      }
+
+      function startNoise() {
+        const ctx = getAudioContext();
+        if (!isPlaying) {
+          buildNoise(currentMode);
+          isPlaying = true;
+          noiseStatus.textContent = '재생 중';
+        }
+      }
+
+      function stopNoise() {
+        if (noiseNode) {
+          noiseNode.stop();
+          noiseNode.disconnect();
+        }
+        if (lfoNode) {
+          lfoNode.stop();
+          lfoNode.disconnect();
+        }
+        if (gainNode) {
+          gainNode.disconnect();
+        }
+        isPlaying = false;
+        noiseStatus.textContent = '재생 대기 중';
+      }
+
+      playBtn.addEventListener('click', startNoise);
+      pauseBtn.addEventListener('click', stopNoise);
+
+      modeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          setMode(button.dataset.mode);
+        });
+      });
+    </script>
+  </body>
+</html>

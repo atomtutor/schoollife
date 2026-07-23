@@ -1,0 +1,218 @@
+<!-- 파일 위치: pages/pomodoro.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="뽀모도로 타이머 - 슬기로운 학교 생활" />
+    <title>뽀모도로 타이머</title>
+    <link rel="icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .timer-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .timer-panel {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .timer-stage {
+        padding: 2rem;
+        text-align: center;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .timer-display {
+        font-size: clamp(3rem, 9vw, 5.5rem);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--primary);
+      }
+
+      .timer-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 1.3rem;
+      }
+
+      .timer-buttons button,
+      .preset-grid button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.8rem 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: white;
+      }
+
+      .timer-side {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+      }
+
+      .timer-note {
+        line-height: 1.75;
+        color: var(--text-subtle);
+        background: rgba(255, 255, 255, 0.55);
+        border-radius: var(--radius-sm);
+        padding: 1rem;
+      }
+
+      @media (max-width: 900px) {
+        .timer-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-mark">⏱️</div>
+        <div>
+          <p class="eyebrow">학습 허브</p>
+          <h1>뽀모도로 타이머</h1>
+        </div>
+      </div>
+
+      <nav class="gnb" aria-label="메인 내비게이션">
+        <a class="nav-link" href="../index.html" data-page="index">메인</a>
+        <a class="nav-link" href="game.html" data-page="game">머리 식히기</a>
+        <a class="nav-link active" href="study.html" data-page="study">공부하자</a>
+      </nav>
+    </header>
+
+    <main class="page-shell timer-shell">
+      <section class="glass card">
+        <div class="section-title-row">
+          <span class="title-emoji">⏱️</span>
+          <h2>집중 타이머로 학습 습관을 만들어요</h2>
+        </div>
+
+        <div class="timer-panel">
+          <div class="timer-stage">
+            <div class="timer-display" id="timerDisplay">10:00</div>
+            <div class="timer-buttons">
+              <button id="startBtn" type="button">시작</button>
+              <button id="pauseBtn" type="button">일시정지</button>
+              <button id="resetBtn" type="button">초기화</button>
+            </div>
+          </div>
+
+          <div class="timer-side">
+            <div class="preset-grid">
+              <button data-minutes="5" type="button">5분</button>
+              <button data-minutes="10" type="button">10분</button>
+              <button data-minutes="30" type="button">30분</button>
+              <button data-minutes="60" type="button">60분</button>
+            </div>
+            <div class="timer-note">
+              <strong>사용 방법</strong><br />
+              1. 원하는 집중 시간을 선택해요.<br />
+              2. 시작 버튼을 누르면 타이머가 작동해요.<br />
+              3. 끝나면 짧게 쉬는 시간을 가지며 다시 시작할 수 있어요.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <button class="floating-tutor" type="button" aria-label="AI 영어 튜터 열기">
+      <span>AI 영어 튜터</span>
+    </button>
+
+    <footer class="site-footer glass">
+      <p>OO중/고 학생 제작</p>
+      <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+      const timerDisplay = document.getElementById('timerDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const presetButtons = document.querySelectorAll('[data-minutes]');
+
+      let totalSeconds = 25 * 60;
+      let remainingSeconds = totalSeconds;
+      let timerId = null;
+      let isRunning = false;
+
+      function formatTime(seconds) {
+        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        return `${mins}:${secs}`;
+      }
+
+      function syncDisplay() {
+        timerDisplay.textContent = formatTime(remainingSeconds);
+      }
+
+      function startTimer() {
+        if (isRunning) return;
+        isRunning = true;
+        timerId = setInterval(() => {
+          remainingSeconds -= 1;
+          if (remainingSeconds <= 0) {
+            remainingSeconds = 0;
+            clearInterval(timerId);
+            isRunning = false;
+            alert('집중 시간이 끝났어요. 잠깐 쉬었다가 다시 시작해보세요!');
+          }
+          syncDisplay();
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        if (!isRunning) return;
+        clearInterval(timerId);
+        isRunning = false;
+      }
+
+      function resetTimer() {
+        pauseTimer();
+        remainingSeconds = totalSeconds;
+        syncDisplay();
+      }
+
+      function setDuration(minutes) {
+        totalSeconds = minutes * 60;
+        remainingSeconds = totalSeconds;
+        pauseTimer();
+        syncDisplay();
+      }
+
+      startBtn.addEventListener('click', startTimer);
+      pauseBtn.addEventListener('click', pauseTimer);
+      resetBtn.addEventListener('click', resetTimer);
+
+      presetButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const minutes = Number(button.dataset.minutes);
+          setDuration(minutes);
+        });
+      });
+
+      syncDisplay();
+    </script>
+  </body>
+</html>
