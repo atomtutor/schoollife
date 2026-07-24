@@ -29,7 +29,7 @@
 
       canvas {
         width: 100%;
-        height: 72vh;
+        height: 78vh;
         max-width: 420px;
         max-height: 530px;
         object-fit: contain; /* 화면(가로/세로) 크기에 맞춰 비율이 찌그러지지 않고 항상 전체가 보이게 해요 */
@@ -109,11 +109,6 @@
 
     <main class="page-shell game-shell">
       <section class="glass card">
-        <div class="section-title-row">
-          <span class="title-emoji">🍉</span>
-          <h2>같은 과일을 합쳐서 큰 수박을 만들어요</h2>
-        </div>
-
         <div class="game-panel">
           <div class="game-stage">
             <canvas id="gameCanvas" width="420" height="530" aria-label="수박 게임 캔버스"></canvas>
@@ -399,7 +394,7 @@
         ctx.fillRect(0, groundY - 18, canvas.width, 18);
       }
 
-      function drawFruit(x, y, type, isCurrent = false) {
+      function drawFruit(x, y, type) {
         const fruit = FRUITS[type];
         const centerX = OFFSET_X + x * CELL + CELL / 2;
         const centerY = OFFSET_Y + y * CELL + CELL / 2;
@@ -407,12 +402,6 @@
 
         if (fruit.img && fruit.img.complete && fruit.img.naturalWidth > 0) {
           ctx.drawImage(fruit.img, centerX - fruit.radius, centerY - fruit.radius, size, size);
-        }
-
-        if (isCurrent) {
-          ctx.strokeStyle = '#6554ff';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(OFFSET_X + x * CELL + 4, OFFSET_Y + y * CELL + 4, CELL - 8, CELL - 8);
         }
       }
 
@@ -422,13 +411,13 @@
         for (let y = 0; y < ROWS; y += 1) {
           for (let x = 0; x < COLS; x += 1) {
             if (board[y][x] !== null) {
-              drawFruit(x, y, board[y][x], false);
+              drawFruit(x, y, board[y][x]);
             }
           }
         }
 
         if (current && !gameOver) {
-          drawFruit(current.x, current.y, current.type, true);
+          drawFruit(current.x, current.y, current.type);
         }
 
         if (gameOver) {
