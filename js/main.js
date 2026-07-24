@@ -100,12 +100,34 @@ if (timeTarget && targetTimeInput) {
   setInterval(update, 1000);
 }
 
+/* AI 영어 튜터 버튼: 누르면 Dify 챗봇이 담긴 패널이 열리고,
+   X 버튼 / 어두운 배경 클릭 / ESC 키를 누르면 닫혀요.
+   무료 사용량 초과 시 안내 메시지 필요
+   크레딧이 빨리 소진될 경우, Dify에 Google Gemini 등 자체 무료 API 키를 연결하는 방식으로 전환 가능 */
 const floatingTutor = document.querySelector('.floating-tutor');
-if (floatingTutor) {
+const tutorPanel = document.querySelector('#tutor-panel');
+const tutorCloseBtn = document.querySelector('#tutor-close-btn');
+
+if (floatingTutor && tutorPanel && tutorCloseBtn) {
   floatingTutor.addEventListener('click', () => {
-    // TODO: Dify 챗봇 embed script 삽입 위치
-    // 무료 사용량 초과 시 안내 메시지 필요
-    // 크레딧이 빨리 소진될 경우, Dify에 Google Gemini 등 자체 무료 API 키를 연결하는 방식으로 전환 가능
-    window.alert('AI 영어 튜터는 추후 Dify 챗봇 연결 단계에서 확장됩니다.');
+    tutorPanel.hidden = false;
+  });
+
+  tutorCloseBtn.addEventListener('click', () => {
+    tutorPanel.hidden = true;
+  });
+
+  // 챗봇 창 바깥(어두운 배경)을 누르면 닫히게 해요
+  tutorPanel.addEventListener('click', (event) => {
+    if (event.target === tutorPanel) {
+      tutorPanel.hidden = true;
+    }
+  });
+
+  // 키보드로 ESC를 누르면 닫히게 해요 (접근성)
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !tutorPanel.hidden) {
+      tutorPanel.hidden = true;
+    }
   });
 }
