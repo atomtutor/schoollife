@@ -142,6 +142,33 @@
       <span>AI 영어 튜터</span>
     </button>
 
+    <!-- AI 영어 튜터 챗봇 창: 평소에는 hidden 속성으로 숨겨져 있다가,
+         플로팅 버튼을 누르면 main.js가 hidden을 풀어서 화면에 보여줘요. -->
+    <div id="tutor-panel" class="tutor-panel" hidden>
+      <div class="tutor-panel-inner glass">
+        <div class="tutor-panel-header">
+          <div>
+            <p class="tutor-panel-title">🤖 AI 영어 튜터</p>
+            <p class="tutor-panel-hint">💡 새 단어로 다시 시작하려면 채팅창 안의 🔄 버튼을 눌러주세요</p>
+          </div>
+          <button id="tutor-close-btn" type="button" aria-label="AI 영어 튜터 닫기">✕</button>
+        </div>
+        <div class="tutor-panel-body">
+          <!-- Dify에서 만든 영어 단어 챗봇이 여기에 표시돼요.
+               무료 사용량 초과 시 안내 메시지 필요
+               크레딧이 빨리 소진될 경우, Dify에 Google Gemini 등 자체 무료 API 키를 연결하는 방식으로 전환 가능 -->
+          <iframe
+            id="tutor-iframe"
+            src="https://udify.app/chatbot/o3hLbj0Ut3vGTRB0"
+            style="width: 100%; height: 100%"
+            frameborder="0"
+            allow="microphone"
+            title="AI 영어 튜터 챗봇"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
     <footer class="site-footer glass">
       <p>OO중/고 학생 제작</p>
       <a href="#" aria-label="피드백 및 문의">피드백/문의</a>
@@ -248,8 +275,10 @@
       function update(delta) {
         if (gameOver || gameClear) return;
 
-        const moveX = (canvas.width - paddle.width) / 2;
-        paddle.x = Math.min(Math.max(paddle.x + (delta * 0.05 * (mouseX - paddle.x)), 0), canvas.width - paddle.width);
+        // 패들의 "왼쪽 끝"이 아니라 "가운데"가 마우스 위치를 따라가도록,
+        // 목표 좌표에서 패들 폭의 절반만큼 미리 빼줘요.
+        const targetX = mouseX - paddle.width / 2;
+        paddle.x = Math.min(Math.max(paddle.x + (delta * 0.05 * (targetX - paddle.x)), 0), canvas.width - paddle.width);
 
         ball.x += ball.vx;
         ball.y += ball.vy;
