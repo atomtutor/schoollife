@@ -495,10 +495,22 @@ h1 {
 
 .tutor-panel-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 0.6rem;
   padding: 16px 20px;
+}
+
+.tutor-panel-title {
+  margin: 0;
   font-weight: 800;
+}
+
+.tutor-panel-hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-subtle);
 }
 
 .tutor-panel-header button {
