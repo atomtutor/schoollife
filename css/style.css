@@ -474,6 +474,12 @@ h1 {
   background: rgba(15, 23, 42, 0.45); /* 화면 전체를 덮는 어두운 반투명 배경 */
 }
 
+/* hidden 속성이 있을 때는 display: flex보다 이 규칙이 우선 적용되도록 해서
+   처음 페이지를 열었을 때 챗봇 창이 보이지 않게 해요. */
+.tutor-panel[hidden] {
+  display: none;
+}
+
 .tutor-panel-inner {
   width: 100%;
   max-width: 420px;
