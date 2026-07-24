@@ -190,10 +190,7 @@
       const noiseStatus = document.getElementById('noiseStatus');
       const playBtn = document.getElementById('playBtn');
       const pauseBtn = document.getElementById('pauseBtn');
-      const modeButtons = document.querySelectorAll('[data-mode]');
-
-      // 진단용 로그: 스크립트가 실행됐는지, 버튼을 잘 찾았는지 콘솔에서 확인할 수 있어요.
-      console.log('[백색소음] 스크립트 실행됨. playBtn 찾음?', !!playBtn, 'pauseBtn 찾음?', !!pauseBtn);
+      const noiseModeButtons = document.querySelectorAll('[data-mode]');
 
       let audioContext = null;
       let noiseNode = null;
@@ -286,7 +283,6 @@
       }
 
       function startNoise() {
-        console.log('[백색소음] 재생 버튼 클릭됨. 현재 상태:', isPlaying);
         try {
           const ctx = getAudioContext();
           if (!isPlaying) {
@@ -321,9 +317,9 @@
       playBtn.addEventListener('click', startNoise);
       pauseBtn.addEventListener('click', stopNoise);
 
-      modeButtons.forEach((button) => {
+      noiseModeButtons.forEach((button) => {
         button.addEventListener('click', () => {
-          modeButtons.forEach((btn) => btn.classList.remove('active'));
+          noiseModeButtons.forEach((btn) => btn.classList.remove('active'));
           button.classList.add('active');
           setMode(button.dataset.mode);
         });
