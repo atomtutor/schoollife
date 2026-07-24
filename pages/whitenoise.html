@@ -56,15 +56,6 @@
         font-weight: 700;
         cursor: pointer;
         background: white;
-        transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
-      }
-
-      /* 지금 선택된 소리 모드를 눈에 띄게 강조 표시해요.
-         이게 없으면 버튼을 눌러도 아무 반응이 없어 보여서 헷갈릴 수 있어요. */
-      .noise-mode button.active {
-        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-        color: #fff;
-        transform: translateY(-1px);
       }
 
       .noise-side {
@@ -202,7 +193,13 @@
 
       function getAudioContext() {
         if (!audioContext) {
-          audioContext = new window.AudioContext();
+          // 일부 브라우저(특히 사파리)는 AudioContext 대신
+          // webkitAudioContext라는 이름을 써요. 둘 다 지원하도록 해요.
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) {
+            throw new Error('이 브라우저는 오디오 재생 기능을 지원하지 않아요.');
+          }
+          audioContext = new AudioContextClass();
         }
         if (audioContext.state === 'suspended') {
           audioContext.resume();
@@ -233,7 +230,7 @@
         source.loop = true;
 
         const gain = ctx.createGain();
-        gain.gain.value = 0.08; // 기존 0.03은 너무 작아서 거의 안 들렸어요
+        gain.gain.value = 0.03;
 
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
@@ -278,11 +275,18 @@
       }
 
       function startNoise() {
-        const ctx = getAudioContext();
-        if (!isPlaying) {
-          buildNoise(currentMode);
-          isPlaying = true;
-          noiseStatus.textContent = '재생 중';
+        try {
+          const ctx = getAudioContext();
+          if (!isPlaying) {
+            buildNoise(currentMode);
+            isPlaying = true;
+            noiseStatus.textContent = '재생 중';
+          }
+        } catch (error) {
+          // 에러가 나도 화면이 그대로 멈춰있지 않고, 원인을 바로 알 수 있게
+          // 화면에 안내 문구를 보여주고 콘솔에도 자세한 내용을 남겨요.
+          noiseStatus.textContent = '재생할 수 없어요 😢 (브라우저 호환 문제일 수 있어요)';
+          console.error('백색소음 재생 오류:', error);
         }
       }
 
@@ -307,20 +311,9 @@
 
       modeButtons.forEach((button) => {
         button.addEventListener('click', () => {
-          // 클릭한 버튼만 강조 표시되도록, 먼저 전체 버튼의 강조를 지우고
-          // 클릭한 버튼에만 다시 강조를 켜요.
-          modeButtons.forEach((btn) => btn.classList.remove('active'));
-          button.classList.add('active');
           setMode(button.dataset.mode);
         });
       });
-
-      // 페이지를 처음 열었을 때는 기본값인 "백색소음" 버튼이
-      // 선택된 것처럼 보이도록 미리 강조 표시해둬요.
-      const defaultModeButton = document.querySelector('[data-mode="white"]');
-      if (defaultModeButton) {
-        defaultModeButton.classList.add('active');
-      }
     </script>
   </body>
 </html>
