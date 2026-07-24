@@ -461,3 +461,64 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* AI 영어 튜터 챗봇 창 스타일 */
+.tutor-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.45); /* 화면 전체를 덮는 어두운 반투명 배경 */
+}
+
+.tutor-panel-inner {
+  width: 100%;
+  max-width: 420px;
+  height: min(80vh, 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.tutor-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  font-weight: 800;
+}
+
+.tutor-panel-header button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.tutor-panel-body {
+  flex: 1;
+  padding: 0 12px 12px;
+}
+
+.tutor-panel-body iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 767px) {
+  .tutor-panel {
+    padding: 0;
+  }
+
+  .tutor-panel-inner {
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
